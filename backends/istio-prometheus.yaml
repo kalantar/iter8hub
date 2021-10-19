@@ -1,0 +1,34 @@
+name: istio-prometheus
+description: "Istio metrics from Prometheus"
+versionInfo:
+- revision: revision-1
+  namespace: namespace-1
+- revision: revision-2
+  namespace: namespace-2
+method: GET
+provider: prometheus
+jqExpression: .data.result[0].value[1] | tonumber
+url: https://provider.url
+metrics: 
+- name: mean-latency
+  description: "Mean latency"
+  params:
+    query: "(sum(increase(istio_request_duration_milliseconds_sum{reporter='source',destination_workload='$revision',destination_workload_namespace='$namespace'}[${elapsedTime}s])) or on() vector(0)) / (sum(increase(istio_requests_total{reporter='source',destination_workload='$revision',destination_workload_namespace='$namespace'}[${elapsedTime}s])) or on() vector(0))"
+  type: Gauge
+  units: milliseconds
+- name: error-rate
+  description: "Fraction of requests with error responses"
+  params:
+    query: "(sum(increase(istio_requests_total{response_code=~'5..',reporter='source',destination_workload='$revision',destination_workload_namespace='$namespace'}[${elapsedTime}s])) or on() vector(0)) / (sum(increase(istio_requests_total{reporter='source',destination_workload='$revision',destination_workload_namespace='$namespace'}[${elapsedTime}s])) or on() vector(0))"
+  type: Gauge
+- name: request-count
+  description: "Number of requests"
+  params:
+    query: "sum(increase(istio_requests_total{reporter='source',destination_workload='$revision',destination_workload_namespace='$namespace'}[${elapsedTime}s]))"
+  type: Counter
+- name: books-purchased
+  description: "book purchased"
+  params:
+    query: "(sum(increase(number_of_books_purchased_total{destination_workload='$revision',destination_workload_namespace='$namespace'}[${elapsedTime}s])) or on() vector(0)) / (sum(increase(istio_requests_total{reporter='source',destination_workload='$revision',destination_workload_namespace='$namespace'}[${elapsedTime}s])) or on() vector(0))"
+  type: Gauge
+  units: milliseconds
